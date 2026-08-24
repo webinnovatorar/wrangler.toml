@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soleil Rouge COD - Simple Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        soleil: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            700: '#be123c',
+                            900: '#881337',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .order-card-pending {
+            border-left: 5px solid #f59e0b;
+        }
+        .order-card-confirmed {
+            border-left: 5px solid #10b981;
+        }
+        .order-card-cancelled {
+            border-left: 5px solid #ef4444;
+        }
+        .glass-header {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="h-full font-sans antialiased bg-slate-950 text-slate-100 flex flex-col min-h-screen">
+
+    <!-- Top Header -->
+    <header class="sticky top-0 z-40 glass-header border-b border-slate-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-soleil-600 flex items-center justify-center text-white font-extrabold shadow-lg shadow-soleil-500/20">
+                    <i class="fa-solid fa-sun text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base sm:text-lg text-white tracking-tight">Soleil<span class="text-soleil-500">Rouge</span> COD</h1>
+                    <p class="text-[11px] text-slate-400">إدارة الطلبيات السريعة - Confirmation Express</p>
+                </div>
+            </div>
+
+            <!-- Quick Action Buttons -->
+            <div class="flex items-center gap-2">
+                <button onclick="triggerLiveTestOrder()" class="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-soleil-600 hover:from-amber-600 hover:to-soleil-700 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-md hover:scale-105 transition active:scale-95">
+                    <i class="fa-solid fa-plus-circle text-amber-200 text-sm"></i>
+                    <span>+ طلب تجريبي جديد</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Summary Counter Cards -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 w-full">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-4 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-lg">
+                    <i class="fa-solid fa-hourglass-half"></i>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-400 block font-medium">En Attente (في الانتظار)</span>
+                    <span class="text-xl font-extrabold text-amber-400" id="stat-pending">0</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-4 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold text-lg">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-400 block font-medium">Confirmé (مؤكدة)</span>
+                    <span class="text-xl font-extrabold text-emerald-400" id="stat-confirmed">0</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-4 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 font-bold text-lg">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-400 block font-medium">Annulé (ملغاة)</span>
+                    <span class="text-xl font-extrabold text-rose-400" id="stat-cancelled">0</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-4 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-soleil-500/10 border border-soleil-500/20 flex items-center justify-center text-soleil-400 font-bold text-lg">
+                    <i class="fa-solid fa-coins"></i>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-400 block font-medium">Chiffre Confirmé</span>
+                    <span class="text-xl font-extrabold text-white"><span id="stat-revenue">0</span> <span class="text-xs font-bold text-amber-400">DH</span></span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Filters & Search Toolbar -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow space-y-6">
+        
+        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-slate-900/80 p-3 rounded-2xl border border-slate-800">
+            <!-- Filter Pills -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+                <button onclick="setFilter('all')" id="filter-btn-all" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-soleil-600 text-white shadow-md shadow-soleil-600/30 whitespace-nowrap transition">
+                    الكل (All) <span id="badge-count-all" class="ml-1 opacity-80">(0)</span>
+                </button>
+                <button onclick="setFilter('En attente')" id="filter-btn-pending" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 whitespace-nowrap transition">
+                    ⏳ En Attente <span id="badge-count-pending" class="ml-1 text-amber-400">(0)</span>
+                </button>
+                <button onclick="setFilter('Confirmer')" id="filter-btn-confirmed" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 whitespace-nowrap transition">
+                    ✅ Confirmées <span id="badge-count-confirmed" class="ml-1 text-emerald-400">(0)</span>
+                </button>
+                <button onclick="setFilter('Annuler')" id="filter-btn-cancelled" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 whitespace-nowrap transition">
+                    ❌ Annulées <span id="badge-count-cancelled" class="ml-1 text-rose-400">(0)</span>
+                </button>
+            </div>
+
+            <!-- Search & City Filter -->
+            <div class="flex items-center gap-2">
+                <div class="relative flex-grow sm:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                    <input type="text" id="search-input" onkeyup="renderOrders()" placeholder="البحث بالاسم، الهاتف..." class="w-full bg-slate-950 border border-slate-800 text-slate-100 text-xs rounded-xl pl-8 pr-3 py-2.5 focus:outline-none focus:border-soleil-500 transition">
+                </div>
+                <select id="city-select" onchange="renderOrders()" class="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-soleil-500">
+                    <option value="">جميع المدن</option>
+                    <option value="Casablanca">الدار البيضاء</option>
+                    <option value="Rabat">الرباط</option>
+                    <option value="Tanger">طنجة</option>
+                    <option value="Marrakech">مراكش</option>
+                    <option value="Fès">فاس</option>
+                    <option value="Agadir">أكادير</option>
+                    <option value="Tétouan">تطوان</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Order Cards Grid Container -->
+        <div id="orders-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Dynamic order cards will be rendered here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden text-center py-16 bg-slate-900/40 rounded-3xl border border-dashed border-slate-800">
+            <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-slate-500 mx-auto mb-3">
+                <i class="fa-solid fa-inbox text-2xl"></i>
+            </div>
+            <h3 class="font-bold text-slate-300 text-base">لا توجد طلبيات مطابقة للبحث</h3>
+            <p class="text-xs text-slate-500 mt-1">جرب تغيير شروط التصفية أو أضف طلبية تجريبية جديدة</p>
+        </div>
+
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+    <script>
+        // Initial Mock Moroccan Orders
+        let orders = [
+            {
+                id: 'CMD-1089',
+                clientName: 'أنس البقالي',
+                phone: '0661928374',
+                city: 'Casablanca',
+                address: 'شارع المسيرة، معاريف، عمارة 12 شقة 4',
+                product: 'SOLEIL ROUGE (Pack Duo - 2 Qts)',
+                price: 299,
+                status: 'En attente',
+                time: 'منذ 5 دقائق',
+                notes: 'يرجى الاتصال بعد الساعة 2 زوالاً'
+            },
+            {
+                id: 'CMD-1088',
+                clientName: 'سارة العلمي',
+                phone: '0612345678',
+                city: 'Tanger',
+                address: 'حي مالاباطا، قرب مطعم البحر',
+                product: 'SOLEIL ROUGE (قارورة 1 - 100ml)',
+                price: 169,
+                status: 'Confirmer',
+                time: 'منذ 25 دقيقة',
+                notes: 'تأكيد عبر الواتساب مباشرة'
+            },
+            {
+                id: 'CMD-1087',
+                clientName: 'محمد بناني',
+                phone: '0678901234',
+                city: 'Marrakech',
+                address: 'جليز، زنقة سوريا، رقم 45',
+                product: 'SOLEIL ROUGE (Pack VIP 3 Qts)',
+                price: 399,
+                status: 'Annuler',
+                time: 'منذ ساعة',
+                notes: 'إلغاء الطلب: الزبون غير رأيه'
+            },
+            {
+                id: 'CMD-1086',
+                clientName: 'خديجة التازي',
+                phone: '0654321098',
+                city: 'Rabat',
+                address: 'أكدال، شارع فال ولد عمير',
+                product: 'SOLEIL ROUGE (Pack Duo - 2 Qts)',
+                price: 299,
+                status: 'En attente',
+                time: 'منذ ساعتين',
+                notes: 'الطلب قادم من Landing Page'
+            }
+        ];
+
+        let currentFilter = 'all';
+
+        // Load saved state if present
+        function initApp() {
+            const saved = localStorage.getItem('soleil_simple_orders');
+            if (saved) {
+                try {
+                    orders = JSON.parse(saved);
+                } catch (e) {
+                    console.error("Error loading localStorage", e);
+                }
+            }
+            renderOrders();
+        }
+
+        function saveState() {
+            localStorage.setItem('soleil_simple_orders', JSON.stringify(orders));
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            
+            // Update active button styles
+            ['all', 'pending', 'confirmed', 'cancelled'].forEach(type => {
+                const btn = document.getElementById(`filter-btn-${type}`);
+                if (!btn) return;
+                btn.className = 'px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ';
+                
+                if ((type === 'all' && filter === 'all') ||
+                    (type === 'pending' && filter === 'En attente') ||
+                    (type === 'confirmed' && filter === 'Confirmer') ||
+                    (type === 'cancelled' && filter === 'Annuler')) {
+                    btn.className += 'bg-soleil-600 text-white shadow-md shadow-soleil-600/30 font-extrabold';
+                } else {
+                    btn.className += 'bg-slate-800 text-slate-300 hover:bg-slate-700';
+                }
+            });
+
+            renderOrders();
+        }
+
+        function renderOrders() {
+            const container = document.getElementById('orders-container');
+            const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+            const cityVal = document.getElementById('city-select').value;
+
+            // Filter logic
+            const filtered = orders.filter(o => {
+                const matchesFilter = (currentFilter === 'all') || (o.status === currentFilter);
+                const matchesSearch = o.clientName.toLowerCase().includes(searchVal) || 
+                                      o.phone.includes(searchVal) || 
+                                      o.id.toLowerCase().includes(searchVal);
+                const matchesCity = !cityVal || o.city === cityVal;
+                return matchesFilter && matchesSearch && matchesCity;
+            });
+
+            // Update stats & counts
+            const pendingCount = orders.filter(o => o.status === 'En attente').length;
+            const confirmedCount = orders.filter(o => o.status === 'Confirmer').length;
+            const cancelledCount = orders.filter(o => o.status === 'Annuler').length;
+            const totalRevenue = orders.filter(o => o.status === 'Confirmer').reduce((sum, o) => sum + o.price, 0);
+
+            document.getElementById('stat-pending').innerText = pendingCount;
+            document.getElementById('stat-confirmed').innerText = confirmedCount;
+            document.getElementById('stat-cancelled').innerText = cancelledCount;
+            document.getElementById('stat-revenue').innerText = totalRevenue.toLocaleString('fr-FR');
+
+            document.getElementById('badge-count-all').innerText = `(${orders.length})`;
+            document.getElementById('badge-count-pending').innerText = `(${pendingCount})`;
+            document.getElementById('badge-count-confirmed').innerText = `(${confirmedCount})`;
+            document.getElementById('badge-count-cancelled').innerText = `(${cancelledCount})`;
+
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                document.getElementById('empty-state').classList.remove('hidden');
+                return;
+            } else {
+                document.getElementById('empty-state').classList.add('hidden');
+            }
+
+            container.innerHTML = filtered.map(order => {
+                let cardClass = 'order-card-pending';
+                let statusBadge = `<span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded-full text-[11px] font-extrabold flex items-center gap-1"><i class="fa-solid fa-clock"></i> En Attente</span>`;
+                
+                if (order.status === 'Confirmer') {
+                    cardClass = 'order-card-confirmed';
+                    statusBadge = `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full text-[11px] font-extrabold flex items-center gap-1"><i class="fa-solid fa-check-circle"></i> Confirmée</span>`;
+                } else if (order.status === 'Annuler') {
+                    cardClass = 'order-card-cancelled';
+                    statusBadge = `<span class="bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-full text-[11px] font-extrabold flex items-center gap-1"><i class="fa-solid fa-times-circle"></i> Annulée</span>`;
+                }
+
+                // WhatsApp Darija link generator
+                const cleanPhone = order.phone.replace(/[^0-9]/g, '');
+                const formattedPhone = cleanPhone.startsWith('0') ? '212' + cleanPhone.substring(1) : cleanPhone;
+                const waMessage = encodeURIComponent(`السلام عليكم ${order.clientName} 👋، معاك متجر Soleil Rouge ✨.\nبخصوص طلبية الزيت الأساسي (${order.product}) بـ ${order.price} درهم.\nواش التأكيد جاهز للتوصيل لـ ${order.city}؟ شكراً لكي!`);
+                const waUrl = `https://wa.me/${formattedPhone}?text=${waMessage}`;
+
+                return `
+                <div class="bg-slate-900/90 rounded-2xl border border-slate-800 p-4 shadow-xl ${cardClass} flex flex-col justify-between space-y-4 hover:border-slate-700 transition">
+                    
+                    <!-- Card Top Header -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="font-black text-xs text-slate-400 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">${order.id}</span>
+                            <span class="text-[11px] text-slate-500 font-medium">${order.time}</span>
+                        </div>
+                        <div>${statusBadge}</div>
+                    </div>
+
+                    <!-- Client Info -->
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <h2 class="font-extrabold text-base text-white tracking-wide">${order.clientName}</h2>
+                            <span class="text-xs font-black text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-lg border border-amber-400/20">${order.price} DH</span>
+                        </div>
+                        
+                        <div class="flex items-center gap-2 text-xs text-slate-300">
+                            <i class="fa-solid fa-phone text-soleil-500 w-4 text-center"></i>
+                            <a href="tel:${order.phone}" class="font-mono font-bold hover:underline text-slate-200">${order.phone}</a>
+                        </div>
+
+                        <div class="flex items-center gap-2 text-xs text-slate-300">
+                            <i class="fa-solid fa-location-dot text-amber-500 w-4 text-center"></i>
+                            <span class="font-bold text-slate-200">${order.city}</span>
+                            <span class="text-slate-500 text-[11px] font-normal truncate max-w-[180px]">(${order.address})</span>
+                        </div>
+
+                        <div class="flex items-center gap-2 text-xs text-slate-400 pt-1">
+                            <i class="fa-solid fa-box text-rose-500 w-4 text-center"></i>
+                            <span class="font-semibold text-slate-300">${order.product}</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="pt-2 border-t border-slate-800/80 space-y-2">
+                        
+                        <!-- 1-Click Messaging/Calls -->
+                        <div class="grid grid-cols-2 gap-2">
+                            <a href="${waUrl}" target="_blank" class="py-2 px-3 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition active:scale-95">
+                                <i class="fa-brands fa-whatsapp text-sm"></i>
+                                <span>واتساب دارجة</span>
+                            </a>
+                            <a href="tel:${order.phone}" class="py-2 px-3 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition active:scale-95">
+                                <i class="fa-solid fa-phone-flip text-xs"></i>
+                                <span>اتصال مباشر</span>
+                            </a>
+                        </div>
+
+                        <!-- Status Controls -->
+                        <div class="flex items-center justify-between gap-1.5 pt-1">
+                            <button onclick="updateOrderStatus('${order.id}', 'Confirmer')" class="flex-1 py-2 px-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-md transition active:scale-95 flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-check"></i>
+                                <span>Confirmer</span>
+                            </button>
+                            
+                            <button onclick="updateOrderStatus('${order.id}', 'Annuler')" class="flex-1 py-2 px-2 bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 border border-rose-500/30 font-bold text-xs rounded-xl transition active:scale-95 flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-xmark"></i>
+                                <span>Annuler</span>
+                            </button>
+
+                            ${order.status !== 'En attente' ? `
+                                <button onclick="updateOrderStatus('${order.id}', 'En attente')" title="إعادة إلى حالة الانتظار" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-bold text-xs rounded-xl transition">
+                                    <i class="fa-solid fa-rotate-left"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+
+                    </div>
+
+                </div>
+                `;
+            }).join('');
+        }
+
+        function updateOrderStatus(id, newStatus) {
+            const index = orders.findIndex(o => o.id === id);
+            if (index !== -1) {
+                orders[index].status = newStatus;
+                saveState();
+                renderOrders();
+                
+                const msg = newStatus === 'Confirmer' ? 'تم تأكيد الطلبية بنجاح ✅' : 
+                            newStatus === 'Annuler' ? 'تم تحويل الطلبية إلى ملغاة ❌' : 'تم إعادة الطلبية إلى الانتظار ⏳';
+                showToast(msg, newStatus === 'Confirmer' ? 'success' : 'info');
+            }
+        }
+
+        function triggerLiveTestOrder() {
+            const cities = ['Casablanca', 'Rabat', 'Tanger', 'Marrakech', 'Fès', 'Agadir', 'Tétouan'];
+            const names = ['سفيان الإدريسي', 'مريم الفاسي', 'حمزة العمراني', 'ياسمين الشرايبي', 'عثمان السلاوي'];
+            const offers = [
+                { name: 'SOLEIL ROUGE (قارورة 1 - 100ml)', price: 169 },
+                { name: 'SOLEIL ROUGE (Pack Duo - 2 Qts)', price: 299 },
+                { name: 'SOLEIL ROUGE (Pack VIP 3 Qts)', price: 399 }
+            ];
+
+            const randomCity = cities[Math.floor(Math.random() * cities.length)];
+            const randomName = names[Math.floor(Math.random() * names.length)];
+            const randomOffer = offers[Math.floor(Math.random() * offers.length)];
+            const randomPhone = '06' + Math.floor(10000000 + Math.random() * 90000000);
+            const newId = 'CMD-' + Math.floor(1090 + Math.random() * 100);
+
+            const newOrder = {
+                id: newId,
+                clientName: randomName,
+                phone: randomPhone,
+                city: randomCity,
+                address: 'حي الزهور، زنقة ' + Math.floor(1 + Math.random() * 50),
+                product: randomOffer.name,
+                price: randomOffer.price,
+                status: 'En attente',
+                time: 'الآن',
+                notes: 'طلب مباشر من الموقع'
+            };
+
+            orders.unshift(newOrder);
+            saveState();
+            renderOrders();
+
+            // Play Chime Sound
+            playChimeSound();
+            showToast(`🔔 طلب جديد وصل الآن من ${randomCity}! (${newId})`, 'success');
+        }
+
+        function playChimeSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3); // A5
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.5);
+            } catch (e) {
+                console.log("Audio play blocked", e);
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bg = 'bg-slate-900 border-slate-700 text-slate-100';
+            if (type === 'success') bg = 'bg-emerald-950/90 border-emerald-500/50 text-emerald-200';
+            
+            toast.className = `p-3 rounded-xl border shadow-xl text-xs font-bold flex items-center justify-between backdrop-blur-md transform transition duration-300 translate-y-2 opacity-0 ${bg}`;
+            toast.innerHTML = `<span>${message}</span><i class="fa-solid fa-xmark ml-2 cursor-pointer opacity-70 hover:opacity-100" onclick="this.parentElement.remove()"></i>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // Initialize application on load
+        window.onload = function() {
+            initApp();
+        };
+    </script>
+</body>
+</html>
